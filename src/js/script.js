@@ -1,25 +1,22 @@
 const { src, dest, watch, series, parallel } = require("gulp");
 
-// 入出力先指定
 const srcBase = '../src';
-const themeName = "WordPressTheme"; // テーマフォルダ名と合わせる
-const distBase = `../${themeName}`;
+const distBase = '../dist';
 const srcPath = {
   css: srcBase + '/sass/**/*.scss',
   img: srcBase + '/images/**/*',
-  js: srcBase + '/js/**/*.js', // 追加
+  js: srcBase + '/js/**/*.js', // JavaScriptのソースパス
 };
 const distPath = {
-  css: distBase + '/assets/css/',
-  img: distBase + '/assets/images/',
-  js: distBase + '/assets/js/', // 修正
-  php: distBase + '/**/*.php',
+  css: distBase + '/css/',
+  img: distBase + '/images/',
+  html: distBase + '/**/*.html',
+  js: distBase + '/js/', // JavaScriptの出力パス
 };
 
-// ローカルサーバー立ち上げ
 const browserSync = require("browser-sync");
 const browserSyncOption = {
-  proxy: 'http://localhost:10105/', // LocalのSite hostを入れる
+  server: distBase
 };
 const browserSyncFunc = () => {
   browserSync.init(browserSyncOption);
@@ -65,21 +62,21 @@ const cssSass = () => {
         rem: false
       }
     },browsers)])) // 最新CSS使用を先取り
-    .pipe(cleanCSS({ compatibility: 'ie8' })) // CSS圧縮
+    .pipe(cleanCSS()) // CSS圧縮
     .pipe(sourcemaps.write('./')) // ソースマップの出力先をcssファイルから見たパスに指定
     .pipe(dest(distPath.css)) //
     .pipe(notify({ // エラー発生時のアラート出力
-      message: 'Sassをコンパイルして圧縮してるんやで〜！',
+      message: 'Sassをコンパイルしてるんやで〜！',
       onLast: true
     }))
 }
 
-// 画像圧縮
-const imagemin = require("gulp-imagemin"); // 画像圧縮
-const imageminMozjpeg = require("imagemin-mozjpeg"); // jpgの高圧縮に必要
-const imageminPngquant = require("imagemin-pngquant"); // pngの高圧縮に必要
-const imageminSvgo = require("imagemin-svgo");  // svgの高圧縮に必要
-const webp = require('gulp-webp'); // WebPへの変換に必要
+const imagemin = require("gulp-imagemin");
+const imageminMozjpeg = require("imagemin-mozjpeg");
+const imageminPngquant = require("imagemin-pngquant");
+const imageminSvgo = require("imagemin-svgo");
+const webp = require('gulp-webp');
+
 const imgImagemin = () => {
   return src(srcPath.img)
     .pipe(imagemin([
@@ -89,7 +86,7 @@ const imgImagemin = () => {
       imageminPngquant(),
       imageminSvgo({
         plugins: [{
-          removeViewbox: false // viewBox属性を削除しない
+          removeViewbox: false
         }]
       })
     ], {
@@ -100,43 +97,39 @@ const imgImagemin = () => {
     .pipe(dest(distPath.img));
 };
 
-// JavaScript圧縮
 const jsUglify = () => {
   return src(srcPath.js)
-    .pipe(plumber({
+    .pipe(plumber({ // エラーが出ても処理を止めない
       errorHandler: notify.onError('Error:<%= error.message %>')
     }))
     .pipe(uglify()) // JavaScript圧縮
-    .pipe(dest(distPath.js)) // 圧縮されたJSを出力
-    .pipe(notify({
-      message: 'JavaScriptを圧縮してるんやで〜！',
+    .pipe(dest(distPath.js))
+    .pipe(notify({ // エラー発生時のアラート出力
+      message: 'JavaScriptを圧縮しました！',
       onLast: true
     }));
 };
 
-// ファイルの変更を検知
 const watchFiles = () => {
   watch(srcPath.css, series(cssSass, browserSyncReload));
   watch(srcPath.img, series(imgImagemin, browserSyncReload));
-  watch(srcPath.js, series(jsUglify, browserSyncReload)); // 追加
-  watch(distPath.php, series(browserSyncReload));
+  watch(srcPath.js, series(jsUglify, browserSyncReload)); // JavaScriptの変更を監視
+  watch(distPath.html, series(browserSyncReload));
+  watch(distPath.js, series(browserSyncReload));
 };
 
-// clean
 const del = require('del');
 const delPath = {
-  css: distBase + '/assets/css/styles.css',
-  cssMap: distBase + '/assets/css/styles.css.map',
-  img: distBase + '/assets/images/',
-  js: distBase + '/assets/js/**/*.js', // 追加
+  css: distBase + '/css/style.css',
+  cssMap: distBase + '/css/style.css.map',
+  img: distBase + '/images/'
 };
+
 const clean = (done) => {
   del(delPath.css, { force: true });
   del(delPath.cssMap, { force: true });
   del(delPath.img, { force: true });
-  del(delPath.js, { force: true }); // 追加
   done();
 };
 
-// 実行
 exports.default = series(series(clean, imgImagemin, cssSass, jsUglify), parallel(watchFiles, browserSyncFunc));
