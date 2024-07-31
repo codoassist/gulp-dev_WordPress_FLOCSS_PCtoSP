@@ -1,11 +1,11 @@
-# gulp-dev_WordPress_flocss_SPtoSP
+# gulp-dev_WordPress_flocss_PCtoSP
 
 ## 動作が確認できている環境
 - Nodeバージョン v14.16.0
 - Gulp 4系
 
 ## 使い方
-- gulp-dev_WordPress_FLOCSS_SPtoPCフォルダの中身を、WordPress環境のapp/public/wp-content/themes直下に配置する
+- gulp-dev_WordPress_FLOCSS_PCtoSPフォルダの中身を、WordPress環境のapp/public/wp-content/themes直下に配置する
 - themesフォルダをvscodeで開く
 - WordPressThemeフォルダを任意のフォルダ名に変更する
 - gulpfile.jsの5行目のWordPressThemeの部分を上の手順で変更したフォルダ名に変更する
