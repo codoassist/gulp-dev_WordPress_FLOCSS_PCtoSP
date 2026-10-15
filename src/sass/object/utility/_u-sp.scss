@@ -1,6 +1,6 @@
 @use "global" as *;
 
-.u-mobile {
+.u-sp {
   display: none;
   @include mq(md) {
     display: block;

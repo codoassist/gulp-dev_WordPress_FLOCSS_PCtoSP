@@ -1,4 +1,3 @@
-@use "sass:math";
 @use "sass:map";
 
 // インナー幅
@@ -24,20 +23,13 @@ $breakpoints: (
   xl: 1440,
 );
 
-// フォントウェイト
-$font-weights: (
-  normal: 400,
-  medium: 500,
-  bold: 700,
-  black: 900,
-);
-
-// メディアクエリ
+// メディアクエリ（PCファースト：ブレイクポイント未満に適用）
+// 例：mq(md) → 767px以下
 $mediaquerys: (
-  sm: "screen and (max-width: #{map.get($breakpoints,'sm')}px)",
-  md: "screen and (max-width: #{map.get($breakpoints,'md')}px)",
-  lg: "screen and (max-width: #{map.get($breakpoints,'lg')}px)",
-  xl: "screen and (max-width: #{map.get($breakpoints,'xl')}px)",
+  sm: "screen and (max-width: #{map.get($breakpoints,'sm') - 1}px)",
+  md: "screen and (max-width: #{map.get($breakpoints,'md') - 1}px)",
+  lg: "screen and (max-width: #{map.get($breakpoints,'lg') - 1}px)",
+  xl: "screen and (max-width: #{map.get($breakpoints,'xl') - 1}px)",
 );
 
 // メディアクエリを "@include mq(){}" で書くことができる
@@ -46,50 +38,3 @@ $mediaquerys: (
     @content;
   }
 }
-
-// line-height
-@mixin l_height($pixels, $height) {
-  font-size: $pixels * 1px;
-  line-height: $height / $pixels;
-}
-
-@mixin f_around($pixels, $height: false, $weight: false, $spacing: false) {
-  font-size: $pixels * 1px;
-
-  @if $weight {
-    font-weight: $weight;
-  }
-
-  @if $height {
-    line-height: $height / $pixels;
-  }
-
-  @if $spacing {
-    letter-spacing: ($spacing / 1000) * 1em;
-  }
-}
-
-// 呼び出し例
-// ＠include f_around(フォントサイズ18px, 行送り30 , 太さW6, トラッキング200)
-
-$z-index-values: (
-  "modal": 1000,
-  "dropdown": 900,
-  "tooltip": 800,
-  "overlay": 700,
-  "header": 600,
-  "sidebar": 500,
-);
-
-@mixin set-z-index($element) {
-  @if map-has-key($z-index-values, $element) {
-    z-index: map-get($z-index-values, $element);
-  } @else {
-    @warn "無効なz-index要素です: #{$element}";
-  }
-}
-
-// 使用例:
-// .my-modal {
-//   @include set-z-index("modal");
-// }
